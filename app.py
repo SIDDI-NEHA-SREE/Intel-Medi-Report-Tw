@@ -39,7 +39,7 @@ def positional_encoding(max_len, d_model):
 @st.cache_data
 def load_data():
     try:
-        path = kagglehub.dataset_download("tboyle10/medicaltranscriptions")
+        path = pd.read_csv("Medical_Term_Dictionary.csv")
         for root, dirs, files in os.walk(path):
             for f in files:
                 if f.endswith('.csv'):
@@ -419,13 +419,14 @@ elif task == "Task 7: Healthcare Dashboard":
         X_tr, _, y_tr, _ = train_test_split(X, y, test_size=0.2, random_state=42)
         inp = keras.Input(shape=(MAX_LEN,))
         emb = layers.Embedding(MAX_VOCAB, EMBED_DIM)(inp)
-        ao, as_ = layers.MultiHeadAttention(num_heads=4, key_dim=32, return_attention_scores=True)(emb, emb)
+        attention_layer = layers.MultiHeadAttention(num_heads=4,key_dim=32)
+        ao = attention_layer(emb, emb)
         pool = layers.GlobalAveragePooling1D()(ao)
         out = layers.Dense(nc, activation='softmax')(pool)
         m = keras.Model(inp, out)
         m.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        m.fit(X_tr, y_tr, epochs=5, batch_size=32, verbose=0)
-        am = keras.Model(inputs=m.input, outputs=[m.output, m.layers[2].output[1]])
+        m.fit(X_tr, y_tr, epochs=1, batch_size=16,verbose=0)
+        am =  keras.Model(inputs=m.input,outputs=m.output)
         return am, tok2, le2
 
     with st.spinner("Building healthcare model..."):
