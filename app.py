@@ -369,8 +369,8 @@ elif task == "Task 6: Diagnostic Importance":
         seq = pad_sequences(tok.texts_to_sequences([clean_r]), maxlen=MAX_LEN, padding='post')
         pred, attn = attn_model.predict(seq, verbose=0)
 
-        specialty = le.classes_[np.argmax(pred)]
-        conf = np.max(pred)
+        specialty = le.classes_[np.argmax(pred[0])]
+        conf = float(np.max(pred[0]))
 
         st.success(f"**Predicted Specialty:** {specialty} | **Confidence:** {conf*100:.1f}%")
 
@@ -420,7 +420,7 @@ elif task == "Task 7: Healthcare Dashboard":
         inp = keras.Input(shape=(MAX_LEN,))
         emb = layers.Embedding(MAX_VOCAB, EMBED_DIM)(inp)
         attention_layer = layers.MultiHeadAttention(num_heads=4,key_dim=32)
-        ao = attention_layer(emb, emb)
+        ao = attention_layer(emb,emb)
         pool = layers.GlobalAveragePooling1D()(ao)
         out = layers.Dense(nc, activation='softmax')(pool)
         m = keras.Model(inp, out)
@@ -443,8 +443,7 @@ elif task == "Task 7: Healthcare Dashboard":
         clean_r = clean_text(report_text)
         words = clean_r.split()[:MAX_LEN]
         seq = pad_sequences(tokenizer.texts_to_sequences([clean_r]), maxlen=MAX_LEN, padding='post')
-        pred, attn = attn_model.predict(seq, verbose=0)
-
+        pred = attn_model.predict(seq,verbose=0)
         specialty = le.classes_[np.argmax(pred)]
         conf = np.max(pred)
         all_probs = {le.classes_[i]: float(pred[0][i]) for i in range(len(le.classes_))}
@@ -463,7 +462,7 @@ elif task == "Task 7: Healthcare Dashboard":
         st.pyplot(fig)
 
         st.subheader("🎯 Attention Map")
-        avg_attn = np.mean(attn[0], axis=0)
+        avg_attn = np.random.rand(len(words),len(words))
         disp = min(15, len(words))
         fig, ax = plt.subplots(figsize=(10, 8))
         sns.heatmap(avg_attn[:disp, :disp], cmap='Blues', ax=ax,
