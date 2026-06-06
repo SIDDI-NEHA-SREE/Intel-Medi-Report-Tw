@@ -445,7 +445,7 @@ elif task == "Task 7: Healthcare Dashboard":
         words = clean_r.split()[:MAX_LEN]
         seq = pad_sequences(tokenizer.texts_to_sequences([clean_r]), maxlen=MAX_LEN, padding='post')
         pred = attention_model.predict(seq, verbose=0)
-        specialty = le.classes_[np.argmax('a')]
+        specialty = le.classes_[np.argmax()]
         conf = np.max()
         all_probs = {le.classes_[i]: float([0][i]) for i in range(len(le.classes_))}
 
