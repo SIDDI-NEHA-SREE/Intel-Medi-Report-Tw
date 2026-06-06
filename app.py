@@ -251,8 +251,8 @@ elif task == "Task 4: Self-Attention Model":
 
     inputs = keras.Input(shape=(MAX_LEN,))
     emb = layers.Embedding(MAX_VOCAB, EMBED_DIM)(inputs)
-    attn = layers.MultiHeadAttention(num_heads=4, key_dim=32)(emb, emb)
-    add = layers.Add()([emb, attn])  # Residual
+    attention = layers.MultiHeadAttention(num_heads=4, key_dim=32)(emb, emb)
+    add = layers.Add()([emb, attention])  # Residual
     norm = layers.LayerNormalization()(add)
     pool = layers.GlobalAveragePooling1D()(norm)
     drop = layers.Dropout(0.4)(pool)
@@ -349,15 +349,15 @@ elif task == "Task 6: Diagnostic Importance":
     inputs = keras.Input(shape=(MAX_LEN,))
     emb = layers.Embedding(MAX_VOCAB, EMBED_DIM)(inputs)
     mha = layers.MultiHeadAttention(num_heads=4, key_dim=32)
-    attn_out = mha(emb, emb)
+    attention_out = mha(emb, emb)
 
-    pool = layers.GlobalAveragePooling1D()(attn_out)
+    pool = layers.GlobalAveragePooling1D()(attention_out)
 
     out = layers.Dense(num_classes,activation='softmax')(pool)
 
     model = keras.Model(inputs, out)
 
-    attn_model = keras.Model(inputs=model.input,outputs=model.output)
+    attention_model = keras.Model(inputs=model.input,outputs=model.output)
 
     sample_report = st.text_area("Enter a medical report:",
         "Patient presents with severe chest pain radiating to the left arm. ECG shows ST elevation in leads II, III, aVF. Troponin elevated at 2.3. Diagnosis: inferior myocardial infarction. Initiated aspirin, heparin, and nitroglycerin.")
@@ -366,7 +366,7 @@ elif task == "Task 6: Diagnostic Importance":
         clean_r = clean_text(sample_report)
         words = clean_r.split()[:MAX_LEN]
         seq = pad_sequences(tok.texts_to_sequences([clean_r]), maxlen=MAX_LEN, padding='post')
-        pred = attn_model.predict(seq, verbose=0)
+        pred = attention_model.predict(seq, verbose=0)
 
         specialty = le.classes_[np.argmax(pred[0])]
         conf = float(np.max(pred[0]))
@@ -395,9 +395,9 @@ elif task == "Task 6: Diagnostic Importance":
         st.subheader("Attention Heatmap")
         disp = min(12, len(words))
         fig, ax = plt.subplots(figsize=(10, 8))
-        avg_attn = np.random.rand(disp, disp)
+        avg_attention = np.random.rand(disp, disp)
 
-        sns.heatmap(avg_attn,cmap='Reds',ax=ax,xticklabels=words[:disp], yticklabels=words[:disp])
+        sns.heatmap(avg_attention,cmap='Reds',ax=ax,xticklabels=words[:disp], yticklabels=words[:disp])
         plt.xticks(rotation=45, ha='right')
         st.pyplot(fig)
 
@@ -430,7 +430,7 @@ elif task == "Task 7: Healthcare Dashboard":
         return am, tok2, le2
 
     with st.spinner("Building healthcare model..."):
-        attn_model, tokenizer, le = build_model()
+        attention_model, tokenizer, le = build_model()
 
     uploaded = st.file_uploader("📤 Upload Medical Report (.txt)", type=['txt'])
     if uploaded:
@@ -462,10 +462,10 @@ elif task == "Task 7: Healthcare Dashboard":
         st.pyplot(fig)
 
         st.subheader("🎯 Attention Map")
-        avg_attn = np.random.rand(len(words),len(words))
+        avg_attention = np.random.rand(len(words),len(words))
         disp = min(15, len(words))
         fig, ax = plt.subplots(figsize=(10, 8))
-        sns.heatmap(avg_attn[:disp, :disp], cmap='Blues', ax=ax,
+        sns.heatmap(avg_attention[:disp, :disp], cmap='Blues', ax=ax,
                     xticklabels=words[:disp], yticklabels=words[:disp])
         plt.xticks(rotation=45, ha='right')
         st.pyplot(fig)
