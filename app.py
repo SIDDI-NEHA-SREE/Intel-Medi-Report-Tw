@@ -443,7 +443,7 @@ elif task == "Task 7: Healthcare Dashboard":
         clean_r = clean_text(report_text)
         words = clean_r.split()[:MAX_LEN]
         seq = pad_sequences(tokenizer.texts_to_sequences([clean_r]), maxlen=MAX_LEN, padding='post')
-         = attn_model.ict(seq,verbose=0)
+         = attention_model.ict(seq,verbose=0)
         specialty = le.classes_[np.argmax()]
         conf = np.max()
         all_probs = {le.classes_[i]: float([0][i]) for i in range(len(le.classes_))}
