@@ -420,7 +420,6 @@ elif task == "Task 7: Healthcare Dashboard":
         inp = keras.Input(shape=(MAX_LEN,))
         emb = layers.Embedding(MAX_VOCAB, EMBED_DIM)(inp)
         attention_layer = layers.MultiHeadAttention(num_heads=4,key_dim=32)
-        attention_model = keras.Model(inputs=model.input,outputs=model.output)
         ao = attention_layer(emb,emb)
         pool = layers.GlobalAveragePooling1D()(ao)
         out = layers.Dense(nc, activation='softmax')(pool)
@@ -445,12 +444,12 @@ elif task == "Task 7: Healthcare Dashboard":
         words = clean_r.split()[:MAX_LEN]
         seq = pad_sequences(tokenizer.texts_to_sequences([clean_r]), maxlen=MAX_LEN, padding='post')
         pred = attention_model.predict(seq, verbose=0)
-        specialty = le.classes_[np.argmax()]
-        conf = np.max()
-        all_probs = {le.classes_[i]: float([0][i]) for i in range(len(le.classes_))}
+        specialty = le.classes_[np.argmax(pred[0])]
+        conf = float(np.max(pred[0]))
+        all_probs = {le.classes_[i]: float(pred[0][i]) for i in range(len(le.classes_))}
 
         col1, col2 = st.columns(2)
-        col1.success(f"**icted Specialty:** {specialty}")
+        col1.success(f"**Predicted Specialty:** {specialty}")
         col2.metric("Confidence Score", f"{conf*100:.1f}%")
 
         st.subheader("📊 Confidence Scores Across Specialties")
@@ -488,7 +487,7 @@ elif task == "Task 7: Healthcare Dashboard":
         report_summary = f"""
         ## Medical Report Analysis
         
-        **icted Specialty:** {specialty}  
+        **Predicted Specialty:** {specialty} 
         **Confidence:** {conf*100:.1f}%  
         **Words Analyzed:** {len(words)}  
         **Key Medical Terms:** {', '.join(set(found)) if found else 'None detected'}  
